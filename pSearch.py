@@ -31,8 +31,16 @@ for word in keywords_input :
     keywords.append(word)
 
 
+# Open file for writing the results
+filename = "Results.txt"
+target = open(filename, 'w')
+
+paperList = []
+
 for name in namesFile:
     print(name)
+    target.write(name.strip())
+    target.write("\nResearch Papers:")
     service = build("customsearch", "v1", developerKey="AIzaSyCbyFJHL8l2p-DdCGnd92rAhVF9SQzdjoI")
 
     res = service.cse().list(
@@ -53,8 +61,18 @@ for name in namesFile:
         #    pdb.set_trace()
             if keyword.strip().lower() in paper['name'].lower() :
                 pprint.pprint(paper)
+                paperTuple = [paper, keyword]
+                paperList.append(paperTuple)
+                target.write(paper['name'])
+                target.write("\n")
+                #pdb.set_trace()
                 break
 
+    target.write("\n")
+
+target.close()
+
+pdb.set_trace()
 
 #page = requests.get('http://dblp.uni-trier.de/pers/hd/l/Liu:Tongping')
 #tree = html.fromstring(page.content)

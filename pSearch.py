@@ -4,34 +4,37 @@ import json
 import pprint
 from multiprocessing.dummy import Pool as ThreadPool
 from apiclient.discovery import build
+from functools import partial
+
+# Global variables
+paperList = []
 
 #--------------------------------------------------------
 # Function for querying results
 #--------------------------------------------------------
-def queryGoogleApi(name, service) :
+def queryGoogleApi(keywords, customsearchID, service, name) :
 
-    paperList = []
+    pList = []
 
     res = service.cse().list(
       q=name,
-      cx=config_data["searchApi"]["customsearchID"],
+      cx=customsearchID,
     ).execute()
 
-    #pdb.set_trace()
     pprint.pprint(res['items'][0]['title'])
-    paperList.append({"researcher": res['items'][0]['title'],"paper": "NotFound", "keyword": "NotFound"})
+    pList.append({"researcher": res['items'][0]['title'],"paper": "NotFound", "keyword": "NotFound"})
     # for each paper find search for each keyword
     for paper in res['items'][0]['pagemap']['scholarlyarticle'] :
         for keyword in keywords :
             if keyword.strip().lower() in paper['name'].lower() :
-                pprint.pprint(paper)
+                #pprint.pprint(paper)
                 paperTuple = {"researcher": res['items'][0]['title'],"paper": paper, "keyword": keyword.strip()}
-                paperList.append(paperTuple)
+                pList.append(paperTuple)
                 break
 
-    paperList.append({"researcher": "","paper": "", "keyword": "separator"})
+    pList.append({"researcher": "","paper": "", "keyword": "separator"})
 
-    return paperList
+    return pList
 
 #--------------------------------------------------------
 # Function for outputing results
@@ -58,48 +61,53 @@ def outputResults(output_filename, paperList) :
     target.close()
 
 #--------------------------------------------------------
+# Callback for collecting results
+#--------------------------------------------------------
+def collectResults(resrchrPapers)  :
+    paperList.extend(resrchrPapers)
+
+#--------------------------------------------------------
 # Main
 #--------------------------------------------------------
-# Get configuration file
-with open('config.json') as data_file:
-    config_data = json.load(data_file)
+def main(argv) :
+    # Get configuration file
+    with open('config.json') as data_file:
+        config_data = json.load(data_file)
 
-# Open input files
-namesFile = open(sys.argv[1])
-keywords_input = open(sys.argv[2])
+    # Open input files
+    namesFile = open(argv[1])
+    keywords_input = open(argv[2])
 
-# Variables
-keywords = []
-paperList = []
-output_filename = "Results.txt"
+    # Variables
+    names = []
+    keywords = []
+    output_filename = "Results.txt"
 
-# Get keywords from input file into a resuable array
-for word in keywords_input :
-    keywords.append(word)
+    # Open google api service
+    service = build(config_data["searchApi"]["type"], config_data["searchApi"]["version"], developerKey=config_data["searchApi"]["developerKey"])
 
-# Open google api service
-service = build(config_data["searchApi"]["type"], config_data["searchApi"]["version"], developerKey=config_data["searchApi"]["developerKey"])
+    # Get keywords from input file into a resuable array
+    for word in keywords_input :
+        keywords.append(word)
 
-# Process each researcher name and call google api
-for name in namesFile:
-    paperList.extend(queryGoogleApi(name, service))
+    # Create thread pool
+    pool=ThreadPool(4)
+    # Setup partial function that gets passed to async function
+    queryApiPartial = partial(queryGoogleApi, keywords, config_data["searchApi"]["customsearchID"], service)
 
-# Output results
-outputResults(output_filename, paperList)
+    # Spawn a python thread for each name in the list and pass do a google search
+    for name in namesFile:
+        pool.apply_async(queryApiPartial, (name, ), callback=collectResults)
 
-#page = requests.get('http://dblp.uni-trier.de/pers/hd/l/Liu:Tongping')
-#tree = html.fromstring(page.content)
-# Get paper names
-#paperTitles = tree.xpath('//span[@class="title"]/text()')
+    # Close threads and join them
+    pool.close()
+    pool.join()
 
-#webbrowser.open('file://' + os.path.realpath("results.html"));
+    # Output results
+    outputResults(output_filename, paperList)
 
-
-# Make the Pool of workers
-#pool = ThreadPool(4)
-# Open the urls in their own threads
-# and return the results
-#results = pool.map(urllib.urlopen, urls)
-#close the pool and wait for the work to finish
-#pool.close()
-#pool.join()
+#--------------------------------------------------------
+# Start
+#--------------------------------------------------------
+if __name__ == "__main__" :
+    main(sys.argv)

@@ -2,6 +2,7 @@ import pdb
 import sys
 import json
 import pprint
+import time
 from multiprocessing.dummy import Pool as ThreadPool
 from apiclient.discovery import build
 from functools import partial
@@ -85,6 +86,7 @@ def main(argv) :
     # Call a google search for each name
     for name in namesFile:
         paperList.extend(queryGoogleApi(name, keywords, config_data["searchApi"]["customsearchID"], service))
+        time.sleep(0.5) # Allow only two request per second to avoid trottling
 
     # Output results
     outputResults(output_filename, paperList)

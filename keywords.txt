@@ -1,9 +1,4 @@
-false sharing
-Dthreads
-natural language
-human
-linux
-schedule
-scheduling
-GPU
-Agile
+record
+replay
+determinism
+deterministic

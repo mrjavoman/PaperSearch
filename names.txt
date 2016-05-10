@@ -1,3 +1,49 @@
-Tongping Liu
-Xiaoying wang
-Javier Guzman
+Nitin Agrawal
+Andrea Arpaci-Dusseau
+Sujata Banerjee
+Andrew Baumann
+Jeff Chase
+Peter Chen
+Byung-Gon Chun
+Jeff Dean
+Amol Deshpande
+Peter Druschel
+Sasha Fedorova
+Bryan Ford
+Roxana Geambasu
+Philip Gibbons
+Saikat Guha
+Gernot Heiser
+Y. Charlie Hu
+Galen Hunt
+Rebecca Isaacs
+Michael Kaminsky
+Randy Katz
+Dejan Kostic
+Tim Kraska
+Orran Krieger
+Phil Levis
+Boon Loo
+Shan Lu
+Petros Maniatis
+Z. Morley Mao
+Frank McSherry
+James Mickens
+Thomas Moscibroda
+Dushyanth Narayanan
+Sam H. Noh
+KyoungSoo Park
+Simon Peter
+George Porter
+Dan Ports
+Chris Rossbach
+Michael Scott
+Margo Seltzer
+Emin Gün Sirer
+Dawn Song
+Michael Stumm
+Patrick Traynor
+Dan Tsafrir
+Robert Watson
+Ellen Zegura
+Zheng Zhang

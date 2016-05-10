@@ -6,13 +6,10 @@ from multiprocessing.dummy import Pool as ThreadPool
 from apiclient.discovery import build
 from functools import partial
 
-# Global variables
-paperList = []
-
 #--------------------------------------------------------
 # Function for querying results
 #--------------------------------------------------------
-def queryGoogleApi(keywords, customsearchID, service, name) :
+def queryGoogleApi(name, keywords, customsearchID, service) :
 
     pList = []
 
@@ -61,12 +58,6 @@ def outputResults(output_filename, paperList) :
     target.close()
 
 #--------------------------------------------------------
-# Callback for collecting results
-#--------------------------------------------------------
-def collectResults(resrchrPapers)  :
-    paperList.extend(resrchrPapers)
-
-#--------------------------------------------------------
 # Main
 #--------------------------------------------------------
 def main(argv) :
@@ -79,6 +70,7 @@ def main(argv) :
     keywords_input = open(argv[2])
 
     # Variables
+    paperList = []
     names = []
     keywords = []
     output_filename = "Results.txt"
@@ -90,18 +82,9 @@ def main(argv) :
     for word in keywords_input :
         keywords.append(word)
 
-    # Create thread pool
-    pool=ThreadPool(4)
-    # Setup partial function that gets passed to async function
-    queryApiPartial = partial(queryGoogleApi, keywords, config_data["searchApi"]["customsearchID"], service)
-
-    # Spawn a python thread for each name in the list and pass do a google search
+    # Call a google search for each name
     for name in namesFile:
-        pool.apply_async(queryApiPartial, (name, ), callback=collectResults)
-
-    # Close threads and join them
-    pool.close()
-    pool.join()
+        paperList.extend(queryGoogleApi(name, keywords, config_data["searchApi"]["customsearchID"], service))
 
     # Output results
     outputResults(output_filename, paperList)
